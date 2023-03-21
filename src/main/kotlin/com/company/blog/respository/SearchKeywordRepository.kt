@@ -7,7 +7,7 @@ import javax.persistence.LockModeType
 
 interface SearchKeywordRepository : JpaRepository<SearchKeyword, Long> {
     @Lock(LockModeType.OPTIMISTIC)
+    fun findWithLockByKeyword(keyword: String): SearchKeyword?
     fun findByKeyword(keyword: String): SearchKeyword?
-
     fun findTop10ByOrderByCountDesc(): List<SearchKeyword>
 }

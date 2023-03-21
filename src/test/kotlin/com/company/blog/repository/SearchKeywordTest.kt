@@ -34,7 +34,7 @@ class SearchKeywordTest {
     @ParameterizedTest
     @MethodSource("keywordAndSize")
     fun findByKeyword(name: String, expectedSize: Int) {
-        val searchKeyword = searchKeywordRepository.findByKeyword(name)
+        val searchKeyword = searchKeywordRepository.findWithLockByKeyword(name)
         assertEquals(expectedSize, searchKeyword!!.count)
     }
 

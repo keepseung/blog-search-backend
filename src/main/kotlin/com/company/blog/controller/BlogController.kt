@@ -29,10 +29,14 @@ class BlogController(
         @RequestParam("size", required = false)
         size: Int?,
         @RequestParam("sort")
-        sort: SortType?,
+        sort: String?,
     ): PageResponse<SearchBlogResponse> {
         if (!StringUtils.hasText(query)) {
             throw BadRequestException("query 값이 비어있으면 안됩니다.")
+        }
+        val sortType = sort?.let {
+            runCatching { SortType.valueOf(sort) }
+                .getOrElse { throw BadRequestException("sortType 값이 부정확합니다.") }
         }
 
         return blogService.search(
@@ -40,7 +44,7 @@ class BlogController(
                 query = query,
                 page = page,
                 size = size,
-                sortType = sort,
+                sortType = sortType,
             )
         ).let { dto ->
             val meta = dto.meta

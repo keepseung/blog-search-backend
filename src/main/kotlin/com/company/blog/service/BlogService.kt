@@ -11,7 +11,7 @@ class BlogService(
 ) {
     fun search(searchDto: SearchDto): DefaultBlogSearchDto {
         val search = blogSearchService.search(searchDto)
-        blogCommandService.saveKeyword(searchDto.query)
+        blogCommandService.plusKeywordCount(searchDto.query)
         return search
     }
 }

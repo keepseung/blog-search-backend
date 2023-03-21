@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional
 class BlogCommandService(
     val searchKeywordRepository: SearchKeywordRepository,
 ) {
-    fun saveKeyword(query: String) {
-        searchKeywordRepository.findByKeyword(query)?.plusCount() ?: run {
+    fun plusKeywordCount(query: String) {
+        searchKeywordRepository.findWithLockByKeyword(query)?.plusCount() ?: run {
             searchKeywordRepository.save(
                 SearchKeyword(
                     keyword = query,
