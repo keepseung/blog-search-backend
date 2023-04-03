@@ -64,7 +64,7 @@ class BlogControllerUnitTest {
         }
 
         @Test
-        fun `잘못된 쿼리 파라미터인 경우 400 예외 반환`() {
+        fun `query 값이 비어있는 경우 400 예외 반환`() {
             val searchDto = SearchDto("스프링 코틀린", 1, 10, SortType.ACCURACY)
 
             val defaultBlogSearchDto = defaultBlogSearchDto()
@@ -73,14 +73,14 @@ class BlogControllerUnitTest {
             mockMvc
                 .perform(
                     get("/api/blog/search")
-                        .param("query", searchDto.query)
+                        .param("query", "")
                         .param("page", searchDto.page.toString())
                         .param("size", searchDto.size.toString())
-                        .param("sort", "잘못된 값")
+                        .param("sortType", searchDto.sortType.toString())
                 )
                 .andExpect(status().is4xxClientError)
                 .andExpect(jsonPath("$.error.code").value(MessageCode.BAD_REQUEST.name))
-                .andExpect(jsonPath("$.error.message").value("sortType 값이 부정확합니다."))
+                .andExpect(jsonPath("$.error.message").value("검색어는 필수입니다."))
                 .andDo(MockMvcResultHandlers.print())
         }
 
