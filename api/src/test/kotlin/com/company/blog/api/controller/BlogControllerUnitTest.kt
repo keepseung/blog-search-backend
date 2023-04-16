@@ -4,8 +4,8 @@ import com.company.blog.api.service.BlogQueryService
 import com.company.blog.api.service.BlogService
 import com.company.blog.api.util.defaultBlogSearchDto
 import com.company.blog.api.util.searchKeywordEntityList
-import com.company.blog.common.exception.ExternalApiException
-import com.company.blog.common.response.MessageCode
+import com.company.blog.common.exception.BaseException
+import com.company.blog.common.response.ErrorCode
 import com.company.blog.domain.dto.SearchDto
 import com.company.blog.domain.dto.SearchPopularKeywordDto
 import com.company.blog.domain.entity.SortType
@@ -43,8 +43,7 @@ class BlogControllerUnitTest {
         fun `카카오 블로그 검색 API, 네이버 블로그 API 둘 다 장애인 경우 500 응답 반환`() {
             val searchDto = SearchDto("스프링 코틀린", 1, 10, SortType.ACCURACY)
 
-            val errorMessage = "네이버 블로그 API 호출 에러"
-            every { blogService.search(any()) } throws ExternalApiException(errorMessage)
+            every { blogService.search(any()) } throws BaseException(ErrorCode.EXTERNAL_API_EXCEPTION)
 
             mockMvc
                 .perform(
@@ -58,8 +57,7 @@ class BlogControllerUnitTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.data").doesNotExist())
                 .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.error.code").value(MessageCode.EXTERNAL_API_EXCEPTION.name))
-                .andExpect(jsonPath("$.error.message").value(errorMessage))
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.EXTERNAL_API_EXCEPTION.name))
                 .andDo(MockMvcResultHandlers.print())
         }
 
@@ -79,7 +77,7 @@ class BlogControllerUnitTest {
                         .param("sortType", searchDto.sortType.toString())
                 )
                 .andExpect(status().is4xxClientError)
-                .andExpect(jsonPath("$.error.code").value(MessageCode.BAD_REQUEST.name))
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.BAD_REQUEST.name))
                 .andExpect(jsonPath("$.error.message").value("검색어는 필수입니다."))
                 .andDo(MockMvcResultHandlers.print())
         }

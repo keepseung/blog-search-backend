@@ -1,7 +1,8 @@
 package com.company.blog.domain.externalapi
 
-import com.company.blog.common.exception.ExternalApiException
+import com.company.blog.common.exception.BaseException
 import com.company.blog.common.logger.BlogLogger
+import com.company.blog.common.response.ErrorCode
 import com.company.blog.domain.dto.SearchDto
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
@@ -17,7 +18,7 @@ class NaverExternalBlogSearchAdapter(
     @Value("\${naver.client-secret}")
     lateinit var naverClientSecret: String
 
-    override fun searchBlog(request: SearchDto): DefaultBlogSearchResponse? {
+    override fun searchBlog(request: SearchDto): DefaultBlogSearchResponse {
         val (keyword, page, size, sortType) = request
         return runCatching {
             runBlocking {
@@ -28,7 +29,7 @@ class NaverExternalBlogSearchAdapter(
                     display = size,
                     start = page,
                     sort = sortType?.naverSortType?.lowercase(),
-                )?.let { searchResponse ->
+                ).let { searchResponse ->
                     DefaultBlogSearchResponse.of(
                         searchResponse
                     )
@@ -36,7 +37,7 @@ class NaverExternalBlogSearchAdapter(
             }
         }.getOrElse { e ->
             log.error("네이버 블로그 API 호출 에러: ${e.message}")
-            throw ExternalApiException("네이버 블로그 API 호출 에러")
+            throw BaseException(ErrorCode.EXTERNAL_API_EXCEPTION)
         }
     }
 

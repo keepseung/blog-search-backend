@@ -1,6 +1,8 @@
 package com.company.blog.api.service
 
 import com.company.blog.domain.entity.SearchKeyword
+import com.company.blog.domain.entity.SearchKeywordCount
+import com.company.blog.domain.respository.SearchKeywordCountRepository
 import com.company.blog.domain.respository.SearchKeywordRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -9,16 +11,27 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class BlogCommandService(
     val searchKeywordRepository: SearchKeywordRepository,
+    val searchKeywordCountRepository: SearchKeywordCountRepository,
 ) {
     fun plusKeywordCount(query: String) {
-        searchKeywordRepository.findWithLockByKeyword(query)?.plusCount() ?: run {
-            searchKeywordRepository.save(
-                SearchKeyword(
-                    keyword = query,
-                    count = SAVE_COUNT,
+        val keyword = when (val searchKeyword = searchKeywordRepository.findWithLockByKeyword(query)) {
+            null -> {
+                searchKeywordRepository.save(
+                    SearchKeyword(
+                        keyword = query,
+                        count = SAVE_COUNT,
+                    )
                 )
-            )
+            }
+            else -> {
+                searchKeyword.plusCount()
+                searchKeyword
+            }
         }
+
+        searchKeywordCountRepository.save(SearchKeywordCount(
+            keywordId = keyword.id,
+        ))
     }
 
     companion object {

@@ -2,8 +2,8 @@ package com.company.blog.api
 
 import com.company.blog.api.util.defaultBlogSearchResponse
 import com.company.blog.api.util.searchKeywordEntityList
-import com.company.blog.common.exception.ExternalApiException
-import com.company.blog.common.response.MessageCode
+import com.company.blog.common.exception.BaseException
+import com.company.blog.common.response.ErrorCode
 import com.company.blog.domain.dto.SearchDto
 import com.company.blog.domain.entity.SortType
 import com.company.blog.domain.externalapi.KakaoExternalBlogSearchAdapter
@@ -93,7 +93,7 @@ class BlogIntegrationTest {
             val defaultBlogSearchResponse = defaultBlogSearchResponse()
             val firstDocument = defaultBlogSearchResponse.documents.first()
 
-            every { kakaoExternalBlogSearchAdapter.searchBlog(searchDto) } returns null
+            every { kakaoExternalBlogSearchAdapter.searchBlog(searchDto) } throws BaseException(ErrorCode.EXTERNAL_API_EXCEPTION)
             every { naverExternalBlogSearchAdapter.searchBlog(searchDto) } returns defaultBlogSearchResponse
 
             mockMvc
@@ -121,11 +121,9 @@ class BlogIntegrationTest {
             val query = "스프링 코틀린"
             val searchDto = SearchDto(query, 1, 10, SortType.ACCURACY)
 
-            val defaultBlogSearchResponse = defaultBlogSearchResponse()
-
-            every { kakaoExternalBlogSearchAdapter.searchBlog(searchDto) } returns null
-            val errorMessage = "외부 API 호출시 예외 발생했습니다."
-            every { naverExternalBlogSearchAdapter.searchBlog(searchDto) } throws ExternalApiException(errorMessage)
+            val errorCode = ErrorCode.EXTERNAL_API_EXCEPTION
+            every { kakaoExternalBlogSearchAdapter.searchBlog(searchDto) } throws BaseException(errorCode)
+            every { naverExternalBlogSearchAdapter.searchBlog(searchDto) } throws BaseException(errorCode)
 
             mockMvc
                 .perform(
@@ -139,8 +137,8 @@ class BlogIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.data").doesNotExist())
                 .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.error.code").value(MessageCode.EXTERNAL_API_EXCEPTION.name))
-                .andExpect(jsonPath("$.error.message").value(errorMessage))
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.EXTERNAL_API_EXCEPTION.name))
+                .andExpect(jsonPath("$.error.message").value(errorCode.message))
                 .andDo(MockMvcResultHandlers.print())
 
             // 검색수 저장 안된 것 검증

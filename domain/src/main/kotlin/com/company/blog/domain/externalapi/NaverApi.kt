@@ -13,5 +13,5 @@ interface NaverApi {
         @Query("display") display: Int?,
         @Query("start") start: Int?,
         @Query("sort") sort: String?,
-    ): NaverBlogSearchResponse?
+    ): NaverBlogSearchResponse
 }

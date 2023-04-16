@@ -3,7 +3,7 @@ package com.company.blog.common.exception
 import com.company.blog.common.logger.BlogLogger
 import com.company.blog.common.response.ErrorData
 import com.company.blog.common.response.ExceptionResponse
-import com.company.blog.common.response.MessageCode
+import com.company.blog.common.response.ErrorCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindException
@@ -12,23 +12,24 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
-class DefaultExceptionHandler {
+class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ExceptionResponse> {
         log.error(e.stackTraceToString())
-        val unknownError = MessageCode.UNKNOWN_ERROR
+        val unknownError = ErrorCode.UNKNOWN_ERROR
         return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(unknownError.httpStatus.value())
             .body(ExceptionResponse(error = ErrorData(unknownError.name, unknownError.message)))
     }
 
     @ExceptionHandler(BaseException::class)
     fun handleBusinessException(e: BaseException): ResponseEntity<ExceptionResponse> {
         log.warn(e.message)
+        val errorCode = e.errorCode
         return ResponseEntity
-            .status(e.status.value())
-            .body(ExceptionResponse(error = ErrorData(e.code.name, e.message)))
+            .status(errorCode.httpStatus.value())
+            .body(ExceptionResponse(error = ErrorData(errorCode.name, errorCode.message)))
     }
 
     @ExceptionHandler(BindException::class)
@@ -39,7 +40,7 @@ class DefaultExceptionHandler {
             .body(
                 ExceptionResponse(
                     error = ErrorData(
-                        MessageCode.BAD_REQUEST.name,
+                        ErrorCode.BAD_REQUEST.name,
                         fieldExceptionMessage
                     )
                 )
