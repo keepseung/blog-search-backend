@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class BlogSearchService(
-    private val kakaoExternalBlogSearchAdapter: ExternalSearchService,
-    private val naverExternalBlogSearchAdapter: ExternalSearchService,
+    kakaoExternalBlogSearchAdapter: ExternalSearchService,
+    naverExternalBlogSearchAdapter: ExternalSearchService,
 ) {
     private val exteranlBlogSearchAdapters = listOf(kakaoExternalBlogSearchAdapter, naverExternalBlogSearchAdapter)
 
